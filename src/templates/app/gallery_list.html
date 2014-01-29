@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block extra-links %}
+    <link href="{{ STATIC_URL }}image_gallery/css/prettyPhoto.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}image_gallery/css/image_gallery.css" rel="stylesheet" type="text/css" />
+    <script src="{{ STATIC_URL }}image_gallery/js/jquery.prettyPhoto.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}image_gallery/js/init.js" type="text/javascript"></script>
+	
+	{{ form.media }}
+	<link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css">
+	<link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-responsive.min.css">
+
+{% endblock extra-links %}
+
+{% block content %}
+<div class='span12'>
+	<h1> Галерея изображений </h1>
+</div>
+	<div class='span12'>
+	    {% load image_gallery_extras %}
+	    {% for object in object_list %}
+	        <b>Наименование галереи</b>: {{ object.category.name }}
+	        {% show_gallery object.images %}
+	        <hr>
+	    {% endfor %}
+	</div>	
+	
+	<div class='span12'>
+	    <h2>Добавление файлов</h2>
+		<form action="" method="post" id="example-form" enctype="multipart/form-data" >
+			{% csrf_token %}
+		    {{ form }}
+		    <button>Добавить файлы в галерею</button>
+		</form>
+	</div>
+
+{% endblock %}
+

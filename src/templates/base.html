@@ -1,0 +1,20 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html  lang="en"> 
+<head>
+	<title>Страница редактирования сайта</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery.js"></script>
+    {% block extra-links %}{% endblock extra-links %}
+</head>
+
+<body>
+	<div class='container'>
+	<div  class='row'>
+
+	
+		{% block content %}{% endblock %}
+	</div>
+</div>
+	
+</html>

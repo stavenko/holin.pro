@@ -1,0 +1,729 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Михаил Холин</title>
+	<link media="all" rel="stylesheet" type="text/css" href="/static/css/all.css" />
+	<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,300,500,700&subset=latin,cyrillic-ext,cyrillic,latin-ext' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="/static/js/main.js" ></script>
+	<script type="text/javascript" src="/static/jquery.js" ></script>
+	<script type="text/javascript" src="/static/underscore-min.js" ></script>
+	
+	
+	<!--[if lt IE 8]><link rel="stylesheet" type="text/css" href="/static/css/ie.css" media="screen"/><![endif]-->
+	<script type="text/javascript">
+	var Images = '{{images_json|escapejs}}';
+	var CUR_CATEGORY = 4;
+	var CUR_MAIN = 0;
+	var CUR_WEDDING = 0;
+	
+    hsvToRgb = function(o, as_array) {
+      var a, b, bb, f, g, gg, h, i, p, q, r, rr, s, t, v;
+      if (as_array == null) {
+        as_array = false;
+      }
+      h = Math.max(0, Math.min(360, o.h));
+      s = Math.max(0, Math.min(100, o.s));
+      v = Math.max(0, Math.min(100, o.b));
+      v = o.b != null ? o.b : o.v;
+      s /= 100;
+      v /= 100;
+      if (s === 0) {
+        r = g = b = v;
+      } else {
+        h /= 60;
+        i = Math.floor(h);
+        f = h - i;
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+        switch (i) {
+          case 0:
+            r = v;
+            g = t;
+            b = p;
+            break;
+          case 1:
+            r = q;
+            g = v;
+            b = p;
+            break;
+          case 2:
+            r = p;
+            g = v;
+            b = t;
+            break;
+          case 3:
+            r = p;
+            g = q;
+            b = v;
+            break;
+          case 4:
+            r = t;
+            g = p;
+            b = v;
+            break;
+          default:
+            r = v;
+            g = p;
+            b = q;
+        }
+      }
+      if (as_array) {
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), Math.round(o.a * 255)];
+      } else {
+        rr = Math.round(r * 255);
+        gg = Math.round(g * 255);
+        bb = Math.round(b * 255);
+        if (typeof o.a !== "undefined") {
+          a = o.a;
+        } else {
+          a = 1;
+        }
+        return "rgba(" + rr + "," + gg + "," + bb + "," + a + ")";
+      }
+    };
+	var p_seen=0, l_seen=0;
+    var portreits = 0;
+    var landscapes = 0;
+	
+	
+    var draw = function(my_cont){
+		my_cont.find('*').remove();
+		portreits = 0;
+		landscapes = 0;
+		
+        var OW = my_cont.width();
+        var OH = my_cont.height();
+        var pic_amount = 0;
+        var squares = 0;
+		var p_arr = [];
+		var l_arr = [];
+		var padd = 18;
+	
+		// console.log(OW,OH)
+
+        dr_ = function(C){
+            var W = C.width();
+            var H = C.height();
+			
+            // console.log('launch', W, H)
+            var thres = 470;
+
+            var is_portreit = W < H;
+            var M = Math.max(W,H);
+            var m = Math.min(W,H);
+            var ratio = M/m;
+            var is_square   = Math.abs(1-ratio) < 0.1;
+            var no_more_split = false;
+            var is_portreitf = function(w,h){return w < h }
+            var no_more_splitf = function(w, h){
+                if (is_portreitf(w,h)) {
+                    if (h  < thres ){
+                        return true;
+                    }
+                }else{
+                    if (w <thres){
+                        return true;
+                    }
+                }
+                return false;
+            }
+            no_more_split = no_more_splitf(W,H);
+            // console.log('orient',is_square, is_portreit)
+            // console.log("no_more_split", no_more_split);
+            if (no_more_split){
+                // console.log(ratio)
+                pic_amount += 1;
+				var mc = _.random(360);
+                var c = {h: mc, s: 12, b:98,a:1}
+                var bc = {h: mc, s: 12, b:90, a:1}
+				
+                var image_placeholder = $('<div></div>').width(W - (padd*2) ).height(H - (padd*2) )
+				.css('padding-left',padd + 'px')
+				.css('padding-top',padd + 'px')
+				.css('position', 'absolute')
+				.css('top', 0).css('left',0)
+				.css('background-color', hsvToRgb(c)).appendTo(C)
+				.css('border-width', '3px')
+				.css('border-style','solid')
+				.css('border-color',hsvToRgb(bc)) //  + hsvToRgb(c) )
+				
+                //if(is_square) squares +=1;
+                //else{
+                if(is_portreit ){
+					portreits +=1;
+					p_arr.push(image_placeholder)
+				}else {
+					landscapes +=1;
+					l_arr.push(image_placeholder)
+					
+				}
+					//}
+                
+
+            }else{
+                r = Math.round(ratio);
+
+                // console.log("this ratio ", r, ratio, is_square );
+                if (r == 1){
+                    var r = 2 // _.random(2, 3);
+                    // is_portreit = _.random(0,1) === 1;
+                    if(_.random(0,1) === 1){
+                        var v = M;
+                        M = m;
+                        m = v;
+                        is_portreit = !is_portreit;
+
+                    }
+                }
+                var spl = Math.floor(M / r);
+                var total = 0;
+                var arr = [];
+                for (var i = 0; i < (r-1); i++){
+
+                    var f = _.random(0,1)? (function(a,b){return a-b}) :(function(a,b){return a+b})
+                    var per = f(1, _.random(30)/100)
+                    var nspl = Math.round(spl * per);
+                    arr.push(nspl);
+                    total = total + nspl;
+                }
+                arr.push(M - total);
+
+                _.chain(arr)
+                .map(function(w){
+                    if(is_portreit){
+                        dr_($('<div></div>')
+						.css('position','relative')
+						.appendTo(C).width(m).height(w))
+                    }else {
+						dr_($('<div></div>')
+						.css('float','left')
+						.css('position','relative')
+						.appendTo(C).width(w).height(m)) 
+					}
+                })
+
+            }
+        }
+
+
+        dr_(my_cont);
+		$.ajax({
+			url:"/get_pics/",
+			data: {portreits:portreits, 
+				   landscapes:landscapes, 
+				   category_id : CUR_CATEGORY, 
+				   p_seen:p_seen, 
+				   l_seen:l_seen},
+			dataType: 'json',
+			success: function(images){
+				_.chain(images)
+				.map(function(i){
+					if (i.orientation){
+						var C = p_arr.pop()
+					}else{
+						var C = l_arr.pop()
+					}
+					
+					var img = $('<div>').width(C.width()).height(C.height())
+					.addClass('_gal')
+					.css('position','absolute')
+					.css('top',0).css('left',0)
+					.css('padding-left', padd + 'px')
+					.css('padding-top',  padd + 'px')
+					var I = $(new Image()).one('load', function(){
+						img.css('background-image', 'url(' + i.url +')')
+						img.css('background-color', C.css('background-color'))
+						img.css('background-size', 'cover')
+						img.insertBefore(C)
+						img.css('cursor','pointer')
+						img.click(function(){
+							var overlay = $('<div>').appendTo('body')
+							overlay.css({'background-color': 'rgba(0,0,0,0.5)',
+										 'position':'fixed',
+										 'width':'100%',
+										 'height':'100%',
+										 'top':0,
+									 	 'left':0,
+									 	  'text-align':'center'})
+								.click(function(e){
+									overlay.remove();
+								});
+							var img_ = new Image()
+							img_.src = i.url
+							
+							$(img_).appendTo(overlay).css('maxWidth',overlay.width()).css('maxHeight',overlay.height())
+							.click(function(e){
+								overlay.remove();
+							})
+							
+									
+							
+						})
+						
+						C.hide()
+						
+					}).attr('src', i.url)
+					
+					
+					
+					
+				})
+				
+			}
+		})
+        // console.log('total pics', pic_amount, squares, portreits, landscapes)
+
+
+    }
+	$(function(){
+		var pane_cont = $('div.photo-gallyer').width(1139).height('800').css('position','relative')
+		draw(pane_cont)
+		$('#id-next-page').click(function(e){
+			p_seen += portreits;
+			l_seen += landscapes;
+			draw(pane_cont)
+			
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		$('#id-prev-page').click(function(e){
+			if (p_seen < portreits) {p_seen = 0;}else{p_seen -= portreits}
+			if (l_seen < portreits) {l_seen =0;}else{l_seen -= landscapes}
+			
+			
+			draw(pane_cont)
+			
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		$('#id-wedding-prev').click(function(e){
+			var lis = $('#id-wedding-ul li')
+			var am = lis.size()
+			CUR_WEDDING = (CUR_WEDDING - 1 )  % am
+			var id = 'id-wedding-ul'
+			var t=$('#'+id+' li').eq(CUR_WEDDING)
+			var n = $('#'+id+' li').not(t).removeClass('active')
+
+			
+			t.addClass('active')
+			n.fadeOut(1000)
+			t.fadeIn(1000)
+
+			
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		function wed_next(){
+			var lis = $('#id-wedding-ul li')
+			var am = lis.size()
+			CUR_WEDDING = (CUR_WEDDING +1 )  % am
+			var id = 'id-wedding-ul'
+			var t=$('#'+id+' li').eq(CUR_WEDDING)
+			var n = $('#'+id+' li').not(t).removeClass('active')
+			
+			t.addClass('active')
+			n.fadeOut(1000)
+			t.fadeIn(1000)
+			
+		}
+		$('#id-wedding-next').click(function(e){
+			wed_next();
+			
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		
+		$('#id-main-prev').click(function(e){
+			var lis = $('#id-main-ul li')
+			var am = lis.size()
+			CUR_MAIN = (CUR_MAIN - 1 )  % am
+			var t=$('#id-main-ul li').eq(CUR_MAIN)
+			var n = $('#id-main-ul li').not(t).removeClass('active')
+			
+			t.addClass('active')
+			n.fadeOut(1000)
+			t.fadeIn(1000)
+			
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		function main_next(){
+			var lis = $('#id-main-ul li')
+			var am = lis.size()
+			CUR_MAIN = (CUR_MAIN +1 )  % am
+			var t=$('#id-main-ul li').eq(CUR_MAIN)
+			var n = $('#id-main-ul li').not(t).removeClass('active')
+			
+			t.addClass('active')
+			n.fadeOut(1000)
+			t.fadeIn(1000)
+			
+		}
+		$('#id-main-next').click(function(e){
+			main_next();
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		
+		$('#id-wedding').click(function(e){
+			l_seen = 0
+			p_seen =0
+			CUR_CATEGORY = 4
+			draw(pane_cont)
+			$(this).parent().parent().find('li.active').removeClass('active')
+			
+			$(this).parent().addClass('active')
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		
+		$('#id-individual').click(function(e){
+			l_seen = 0
+			p_seen =0
+			CUR_CATEGORY = 5
+			draw(pane_cont)
+			$(this).parent().parent().find('li.active').removeClass('active')
+			$(this).parent().addClass('active')
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		$('#id-reportive').click(function(e){
+			l_seen = 0
+			p_seen =0
+			CUR_CATEGORY = 6
+			draw(pane_cont)
+			$(this).parent().parent().find('li.active').removeClass('active')
+			$(this).parent().addClass('active')
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		
+		$('.smooth-scroll').click(function(e){
+			var dest=0;
+			console.log($(this.hash).offset())
+			if($(this.hash).offset().top > $(document).height()-$(window).height()){
+			  dest=$(document).height()-$(window).height();
+			}else{
+			  dest=$(this.hash).offset().top;
+			}
+			//go to destination
+			$('html,body').animate({scrollTop:dest}, 500,'swing');
+			e.preventDefault()
+			e.stopPropagation()
+			
+		})
+		var _is_vis = true
+		$('#id-lighter1').click(function(e){
+			
+			if (_is_vis){
+				$('#id-nav-holder').fadeOut(1000)
+			}else{
+				$('#id-nav-holder').fadeIn(1000)
+			}
+			_is_vis = !_is_vis
+			
+			e.preventDefault()
+			e.stopPropagation()
+			
+		})
+		
+		var t = $('#id-main-ul li').eq(CUR_MAIN)
+		var n = $('#id-main-ul li').not(t)
+		
+		n.fadeOut(1000)
+		t.fadeOut(1)
+		t.fadeIn(1000)
+		
+		var id = 'id-wedding-ul'
+		var t=$('#'+id+' li').eq(CUR_WEDDING)
+		var n = $('#'+id+' li').not(t).removeClass('active')
+		
+		n.fadeOut(1000)
+		t.fadeOut(1)
+		
+		t.fadeIn(1000)
+		setInterval(wed_next,10000);
+		setInterval(main_next, 10000);
+		
+	})
+    
+
+	</script>
+</head>
+<body >
+	<div id="wrapper">
+		<div id="main">
+			<div class="gallery">
+				<div class="gmask">
+					<ul id='id-main-ul' class='main_galley'>
+						{% for img in main_images %}
+						
+						<li {% if forloop.first%}class='active'{% endif %}><img src="{{img.image.url}}" alt="image description" /></li>
+						{% endfor %}
+						
+					</ul>
+				</div>
+				<div id="id-nav-holder" class="g-holder">
+					<a href="#" id="id-main-prev" class="btn-prev">previous</a>
+					<a href="#" id="id-main-next"class="btn-next">next</a>
+					<div class="box">
+						<span class="text-mx"></span> 
+						<div class="b-content">
+							<span class="logo"><a href="#">Михаил Холин</a></span>
+							<span class="text-photo">фотограф</span>
+						</div>
+						<div class="contact">
+							<p>+7 981 818-63-33</p>
+							<p><span style='font-size:85%'><a href="mailto:holinfoto@yandex.ru">holinfoto@yandex.ru</a></span></p>
+						</div>
+					</div>
+					<a href="#to-content"  class="btn-bottom smooth-scroll">bottom</a>
+				</div>
+				<div id='to-content' class="navigation">
+					<div class="n-holder">
+						<a href="#" id='id-lighter1' class="light no-active"></a>
+						<ul id="nav">
+							<li class="active"><a href="#">Услуги</a></li>
+							<li><a class='smooth-scroll' href="#to-gallery">галлереи</a></li>
+							<li><a class='smooth-scroll' href="#to-contacts">Контактная информация</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div id="content">
+				<a href="#to-gallery" class="smooth-scroll btn-bottom style1"></a>
+				<span class="decoration1"></span>
+				<span class="decoration2"></span>
+				<div  class="c-holder">
+					<div class="block">
+						<h2>Обо мне</h2>
+						<strong class="title">Здравствуйте, меня зовут Михаил Холин.</strong>
+						<p>
+							
+Я профессиональный фотограф. В процессе своего творческого пути, я получил образование художника, дизайнера и фотографа. Работал фотографом в различных городах, руководил фотопроектами, участвовал в выставках, проводил мастер-классы. На данный момент, я занимаюсь фотографией в г. Санкт-Петербург, но могу приехать и в ваш город.
+					
+					</div>
+					<div class="block">
+						<h2>Услуги</h2>
+						<p>Занимаюсь различными фотоуслугами для Вас. Свадебная фотосъемка, индивидуальная фотосессия, рекламная фотосъемка, репортажное фото. К каждому заказу свой индивидуальный подход. Как фотохудожник, я тонко чувствую, как построить четкую и гармоничную композицию кадра, как поставит свет, чтобы передать все нюансы игры теней, поймать оттенки настроений людей, подчеркнуть их характер, отразить красоту. По ценам на мои услуги, всё можно обсудить и найти взаимовыгодное решение. Я всегда готов рассмотреть любые Ваши предложения.</p>
+					</div>
+				</div>
+			</div>
+			<div id="to-gallery" class="tab-box">
+				<a href="#to-contacts" class="smooth-scroll btn-bottom style1 view1"></a>
+				<ul class="tab-nav">
+					<li class="active">
+						<a id='id-wedding' href="#">
+							
+							<span class="p">
+								Love Story, свадебная и семейная съемка. Роль свадебного фотографа не сводится к простому выполнению технических функций, недостаточно знать ремесло. Надо быть в центре эмоций и помогать людям выражать их. Посмотрев фотографии свадьбы, вы вновь вернетесь в этот день. Вновь испытаете эти эмоции.
+								
+								<!-- Love Story, свадебная и семейная съемка. Роль свадебного фотографа не сводится к простому выполнению технических функций, недостаточно профессиональной аппаратуры и технической грамотности. Поскольку основной целью является сбережение памяти о дне свадьбы и о светлых чувствах, приведших молодоженов к этому дню, то и достижение этой цели требует не только высокого профессионализма, но и понимания психологии людей, включения в работу всех своих душевных сил. Только таким образом удается получить запоминающиеся, стильные фотографии высочайшего класса. Яркие, живые, эмоциональные фотографии приятно удивят вас свежестью и новизной восприятия.
+								--></span>
+							<span class="ico"><img src="/static/images/ico1.png" width="66" height="53" alt="image description" /></span>
+							<strong class="title">Свадебная съемка</strong>
+						</a>
+						<span class="arrow"></span>
+					</li>
+					<li>
+						<a id='id-individual' href="#">
+							<span class="p">В зависимости от ваших пожеланий проведу фотосъемку будь это личное портфолио или рекламная съемка. Я работаю и в студии и на улице. Вы можете выбрать для съемок любое место.</span>
+							<span class="ico"><img src="/static/images/ico2.png" width="52" height="50" alt="image description" /></span>
+							<strong class="title">Индивидуальные фотосессии</strong>
+						</a>
+						<span class="arrow"></span>
+					</li>
+					<li>
+						<a id='id-reportive' href="#">
+							<span class="p">Качественно запечатлю лучшие моменты с вашего события, которое может быть любого стиля и направления. Вечеринки, дни рождения, спортивные и другие мероприятия, грамотно составленный репортаж с красивыми кадрами оставит приятное впечатление и отразит события так, как будто смотрящий побывал там.</span>
+							<span class="ico"><img src="/static/images/ico3.png" width="51" height="52" alt="image description" /></span>
+							<strong class="title">Репортажная съемка</strong>
+						</a>
+						<span class="arrow"></span>
+					</li>
+				</ul>
+				<div class="tab-content">
+					<span class="ico-f11"></span>
+					
+					<div  class="tab active">
+						<div class="photo-gallyer">
+							<div class="photo-box">
+								<div class="col">
+									<span class="photo">
+										<img src="/static/images/img2.jpg" width="198" height="212" alt="image description" />
+									</span>
+									<span class="photo">
+										<img src="/static/images/img3.jpg" width="343" height="212" alt="image description" />
+									</span>
+									<span class="photo">
+										<img src="/static/images/img4.jpg" width="560" height="266" alt="image description" />
+									</span>
+									<span class="photo">
+										<img src="/static/images/img5.jpg" width="271" height="212" alt="image description" />
+									</span>
+									<span class="photo">
+										<img src="/static/images/img6.jpg" width="270" height="212" alt="image description" />
+									</span>
+								</div>
+								<div class="col">
+									<div class="twocolumns">
+										<span class="photo">
+											<img src="/static/images/img7.jpg" width="270" height="372" alt="image description" />
+										</span>
+										<div class="frame">
+											<span class="photo">
+												<img src="/static/images/img8.jpg" width="271" height="177" alt="image description" />
+											</span>
+											<span class="photo">
+												<img src="/static/images/img9.jpg" width="271" height="177" alt="image description" />
+											</span>
+										</div>
+									</div>
+									<span class="photo">
+										<img src="/static/images/img12.jpg" width="560" height="245" alt="image description" />
+									</span>
+									<span class="photo">
+										<span class="title">
+											<span class="t-holder"><span class="t-frame">text</span></span>
+										</span>
+										<img src="/static/images/img10.jpg" width="560" height="70" alt="image description" />
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="page-nav">
+							<a href="#" id='id-prev-page' class="btn-prev"><span>previous</span></a>
+							<a href="#" id='id-next-page' class="btn-next"><span>next</span></a>
+							<!-- 
+							<ul>
+								<li class="active"><a href="#">1</a></li>
+								<li><a href="#">2</a></li>
+								<li><a href="#">3</a></li>
+								<li><a href="#">4</a></li>
+								<li><a href="#">5</a></li>
+								<li><a href="#">6</a></li>
+								<li><a href="#">7</a></li>
+							</ul>
+								-->
+						</div>
+					</div>
+			
+				</div>
+			</div>
+			<div class="gallery height1 border1">
+				<div class="gmask">
+					<ul id='id-wedding-ul'>
+						{% for img in wedding_images %}
+						
+						<li {% if forloop.first%}class='active'{% endif %}><img src="{{img.image.url}}" alt="image description" /></li>
+						{% endfor %}
+						
+						
+					</ul>
+				</div>
+				<div class="g-holder size1">
+					<a href="#" id='id-wedding-prev' class="btn-prev">previous</a>
+					<a href="#" id='id-wedding-next' class="btn-next">next</a>
+					<a href="#" class="light style1 no-active"></a>
+					<div class="box size1">
+						<span class="text-mx style1">м/х</span> 
+						<h2>СВАДЕБНАЯ<br />ФОТОГРАФИЯ</h2>
+						
+						<span class="cube"></span>
+					</div>
+				</div>
+				
+				<div id="to-contacts" class="promo-box">
+					<div class="p-holder">
+						<div class="contact-col">
+							<h3>Контактная информация</h3>
+							<p>
+								
+								<span>Телефон +7 981 818-63-33</span>
+								<span>Электропочта — <a href="mailto:holinfoto@yandex.ru">holinfoto@yandex.ru</a></span>
+								<span><a href='http://vk.com/holinfoto' >Я вконтакте</a></span>
+								<span><a href='http://instagram.com/MICHAELHOLIN' >Я в Instagram</a></span>
+							</p>
+							<!-- 
+							<ul class="social">
+								<li><a href="#" class="ico-pic">pic</a></li>
+								<li><a href="#" class="ico-twitter">twitter</a></li>
+								<li><a href="#" class="ico-facebook">facebook</a></li>
+								<li><a href="#" class="ico-be">be</a></li>
+							</ul>
+								-->
+						</div>
+						<div class="box">
+							<div class="b-content">
+								<span class="logo"><a href="#">Михаил Холин</a></span>
+								<span class="text-photo">фотограф</span>
+							</div>
+						</div>
+						<div class="feedback-col">
+							<h3>Отправьте мне сообщение</h3>
+							<form action="/send-me-a-message/" method='post' class="feedback-form">
+								{% csrf_token %}
+								<div class="row">
+									<input type="text" name='name' value="Имя" />
+									<span class="ico-contact"></span>
+								</div>
+								<div class="row">
+									<input type="text" name='email' value="Эл.почта" />
+									<span class="ico-mail"></span>
+								</div>
+								<div class="row">
+									<textarea cols="30" name='text' rows="10">Текст</textarea>
+									<span class="ico-text"></span>
+								</div>
+								<div class="btn-send">
+									Отправить
+									<input type="submit" value="Отправить" />
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="footer">
+		<p class="copyright">2013 (с) сайт фотографа <strong>Михаила холина</strong>. СДЕЛАНО РУКАМИ <a href="#">Студии Л</a></p>
+		<div style="display:none">
+			<!-- Yandex.Metrika informer -->
+			<a href="http://metrika.yandex.ru/stat/?id=23203552&amp;from=informer"
+			target="_blank" rel="nofollow"><img src="//bs.yandex.ru/informer/23203552/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"
+			style="width:88px; height:31px; border:0;" alt="Яндекс.Метрика" title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)" onclick="try{Ya.Metrika.informer({i:this,id:23203552,lang:'ru'});return false}catch(e){}"/></a>
+			<!-- /Yandex.Metrika informer -->
+
+			<!-- Yandex.Metrika counter -->
+			<script type="text/javascript">
+			(function (d, w, c) {
+			    (w[c] = w[c] || []).push(function() {
+			        try {
+			            w.yaCounter23203552 = new Ya.Metrika({id:23203552,
+			                    clickmap:true,
+			                    trackLinks:true,
+			                    accurateTrackBounce:true});
+			        } catch(e) { }
+			    });
+
+			    var n = d.getElementsByTagName("script")[0],
+			        s = d.createElement("script"),
+			        f = function () { n.parentNode.insertBefore(s, n); };
+			    s.type = "text/javascript";
+			    s.async = true;
+			    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+			    if (w.opera == "[object Opera]") {
+			        d.addEventListener("DOMContentLoaded", f, false);
+			    } else { f(); }
+			})(document, window, "yandex_metrika_callbacks");
+			</script>
+			<noscript><div><img src="//mc.yandex.ru/watch/23203552" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+			<!-- /Yandex.Metrika counter -->
+		</div>
+	</div>
+</body>
+</html>

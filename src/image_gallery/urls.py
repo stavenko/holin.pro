@@ -1,0 +1,11 @@
+from django.conf.urls.defaults import *
+# from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+
+from views import *
+
+urlpatterns = patterns('',
+    url(r'^upload/$', Upload.as_view(), name='upload'),
+    url(r'^delete/$', Delete.as_view(), name='delete'),
+    
+)

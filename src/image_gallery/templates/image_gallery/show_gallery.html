@@ -1,0 +1,30 @@
+{% comment %}
+
+		        html = '<div class="gallery-image" 
+                             onclick="GalleryImageDelete(\''+id+'\', \''+response.id+'\')"
+                             onmouseover="showButton(\''+id+'\', \''+response.id+'\')"
+                             onmouseout="hideButton(\''+id+'\', \''+response.id+'\')">'
+		        html += '<div><img id="'+id+'-img'+response.id+'" src="'+response.url+'"></div>'
+
+{% endcomment %}
+
+
+{% if gallery.all %}
+    <div class="gallery">
+    {% for img in gallery.all %}
+	
+	<div style='float:left'>
+				<a class="gallery-image hover-lighting thumbnail" href="{{ img.image.url }}" rel="prettyPhoto[id{{ prettyPhoto_id }}]" >
+		
+				<img class='image-thumbnail img-rounded' src="{{ img.thumbnail.url }}">
+			
+			</a>
+			<div>
+			<input class='remove-button btn btn-mini' img_id='{{img.id}}' type='button'>
+			
+		</div>
+	</div>	
+    {% endfor %}
+    </div>
+
+{% endif %}
