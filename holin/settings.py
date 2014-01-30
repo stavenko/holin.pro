@@ -12,7 +12,7 @@ OWNER_EMAIL = "holinfoto@yandex.ru"
 
 
 import dj_database_url
-DATABASED = {}
+DATABASES = {}
 DATABASES['default'] =  dj_database_url.config()
 """
 DATABASES = {
