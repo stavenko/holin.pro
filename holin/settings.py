@@ -11,7 +11,9 @@ MANAGERS = ADMINS
 OWNER_EMAIL = "holinfoto@yandex.ru"
 
 
-
+import dj_database_url
+DATABASES['default'] =  dj_database_url.config()
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -23,6 +25,7 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default.
     }
 }
+"""
 GALLERY_MAX_IMAGE_SIZE=(5000,5000)
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
